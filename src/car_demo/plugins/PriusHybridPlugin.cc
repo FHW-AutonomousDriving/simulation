@@ -30,25 +30,17 @@
 #include "PriusHybridPlugin.hh"
 
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 
 namespace gazebo
 {
   class PriusHybridPluginPrivate
   {
-    /// \enum DirectionType
-    /// \brief Direction selector switch type.
-    public: enum DirectionType {
-              /// \brief Reverse
-              REVERSE = -1,
-              /// \brief Neutral
-              NEUTRAL = 0,
-              /// \brief Forward
-              FORWARD = 1
-            };
-
     public: ros::NodeHandle nh;
 
     public: ros::Subscriber controlSub;
+
+    public: ros::Publisher speedPub;
 
     /// \brief Pointer to the world
     public: physics::WorldPtr world;
@@ -64,9 +56,6 @@ namespace gazebo
 
     /// \brief Ignition transport position pub
     public: ignition::transport::Node::Publisher posePub;
-
-    /// \brief Ignition transport console pub
-    public: ignition::transport::Node::Publisher consolePub;
 
     /// \brief Physics update event connection
     public: event::ConnectionPtr updateConnection;
@@ -118,9 +107,6 @@ namespace gazebo
 
     /// \brief Last sim time when a EV mode command is received
     public: common::Time lastModeCmdTime;
-
-    /// \brief Current direction of the vehicle: FORWARD, NEUTRAL, REVERSE.
-    public: DirectionType directionState;
 
     /// \brief Chassis aerodynamic drag force coefficient,
     /// with units of [N / (m/s)^2]
@@ -195,60 +181,8 @@ namespace gazebo
     /// \brief Distance distance between rear left and right wheels
     public: double backTrackWidth = 0;
 
-    /// \brief Gas energy density (J/gallon)
-    public: const double kGasEnergyDensity = 1.29e8;
-
-    /// \brief Battery charge capacity in Watt-hours
-    public: double batteryChargeWattHours = 280;
-
-    /// \brief Battery discharge capacity in Watt-hours
-    public: double batteryDischargeWattHours = 260;
-
-    /// \brief Gas engine efficiency
-    public: double gasEfficiency = 0.37;
-
-    /// \brief Minimum gas flow rate (gallons / sec)
-    public: double minGasFlow = 1e-4;
-
-    /// \brief Gas consumption (gallon)
-    public: double gasConsumption = 0;
-
-    /// \brief Battery state-of-charge (percent, 0.0 - 1.0)
-    public: double batteryCharge = 0.75;
-
-    /// \brief Battery charge threshold when it has to be recharged.
-    public: const double batteryLowThreshold = 0.125;
-
-    /// \brief Whether EV mode is on or off.
-    public: bool evMode = false;
-
     /// \brief Gas pedal position in percentage. 1.0 = Fully accelerated.
     public: double gasPedalPercent = 0;
-
-    /// \brief Power for charging a low battery (Watts).
-    public: const double kLowBatteryChargePower = 2000;
-
-    /// \brief Threshold delimiting the gas pedal (throttle) low and medium
-    /// ranges.
-    public: const double kGasPedalLowMedium = 0.25;
-
-    /// \brief Threshold delimiting the gas pedal (throttle) medium and high
-    /// ranges.
-    public: const double kGasPedalMediumHigh = 0.5;
-
-    /// \brief Threshold delimiting the speed (throttle) low and medium
-    /// ranges in miles/h.
-    public: const double speedLowMedium = 26.0;
-
-    /// \brief Threshold delimiting the speed (throttle) medium and high
-    /// ranges in miles/h.
-    public: const double speedMediumHigh = 46.0;
-
-    /// \brief Brake pedal position in percentage. 1.0 =
-    public: double brakePedalPercent = 0;
-
-    /// \brief Hand brake position in percentage.
-    public: double handbrakePercent = 1.0;
 
     /// \brief Angle of steering wheel at last update (radians)
     public: double handWheelAngle = 0;
@@ -301,7 +235,6 @@ PriusHybridPlugin::PriusHybridPlugin()
   char *argv = nullptr;
   ros::init(argc, &argv, "PriusHybridPlugin");
   this->robot_namespace_ = "";
-  this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
   this->dataPtr->flWheelRadius = 0.3;
   this->dataPtr->frWheelRadius = 0.3;
   this->dataPtr->blWheelRadius = 0.3;
@@ -323,28 +256,10 @@ void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
       this->dataPtr->handWheelHigh);
   this->dataPtr->handWheelCmd = handCmd;
 
-  // Brake command
-  double brake = ignition::math::clamp(msg->brake, 0.0, 1.0);
-  this->dataPtr->brakePedalPercent = brake;
-
   // Throttle command
-  double throttle = ignition::math::clamp(msg->throttle, 0.0, 1.0);
+  double throttle = ignition::math::clamp(msg->throttle, -1.0, 1.0);
   this->dataPtr->gasPedalPercent = throttle;
 
-  switch (msg->shift_gears)
-  {
-    case prius_msgs::Control::NEUTRAL:
-      this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
-      break;
-    case prius_msgs::Control::FORWARD:
-      this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-      break;
-    case prius_msgs::Control::REVERSE:
-      this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
-      break;
-    default:
-      break;
-  }
 }
 
 /////////////////////////////////////////////////
@@ -371,7 +286,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("robotNamespace"))
     this->robot_namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
   ros::NodeHandle nh(this->robot_namespace_);
-  this->dataPtr->controlSub = nh.subscribe("prius", 10, &PriusHybridPlugin::OnPriusCommand, this);
+  this->dataPtr->controlSub = nh.subscribe("prius/control", 10, &PriusHybridPlugin::OnPriusCommand, this);
+  this->dataPtr->speedPub = nh.advertise<std_msgs::Float32>("prius/speed", 1);
 
   this->dataPtr->node.Subscribe("/prius/reset",
       &PriusHybridPlugin::OnReset, this);
@@ -379,15 +295,9 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
       &PriusHybridPlugin::OnStop, this);
 
   this->dataPtr->node.Subscribe("/cmd_vel", &PriusHybridPlugin::OnCmdVel, this);
-  this->dataPtr->node.Subscribe("/cmd_gear",
-      &PriusHybridPlugin::OnCmdGear, this);
-  this->dataPtr->node.Subscribe("/cmd_mode",
-      &PriusHybridPlugin::OnCmdMode, this);
 
   this->dataPtr->posePub = this->dataPtr->node.Advertise<ignition::msgs::Pose>(
       "/prius/pose");
-  this->dataPtr->consolePub =
-    this->dataPtr->node.Advertise<ignition::msgs::Double_V>("/prius/console");
 
   std::string chassisLinkName = dPtr->model->GetName() + "::"
     + _sdf->Get<std::string>("chassis");
@@ -491,48 +401,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     this->dataPtr->backTorque = _sdf->Get<double>(paramName);
   else
     this->dataPtr->backTorque = paramDefault;
-
-  paramName = "front_brake_torque";
-  paramDefault = 2000;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->frontBrakeTorque = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->frontBrakeTorque = paramDefault;
-
-  paramName = "back_brake_torque";
-  paramDefault = 2000;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->backBrakeTorque = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->backBrakeTorque = paramDefault;
-
-  paramName = "battery_charge_watt_hours";
-  paramDefault = 280;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->batteryChargeWattHours = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->batteryChargeWattHours = paramDefault;
-
-  paramName = "battery_discharge_watt_hours";
-  paramDefault = 260;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->batteryDischargeWattHours = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->batteryDischargeWattHours = paramDefault;
-
-  paramName = "gas_efficiency";
-  paramDefault = 0.37;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->gasEfficiency = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->gasEfficiency = paramDefault;
-
-  paramName = "min_gas_flow";
-  paramDefault = 1e-4;
-  if (_sdf->HasElement(paramName))
-    this->dataPtr->minGasFlow = _sdf->Get<double>(paramName);
-  else
-    this->dataPtr->minGasFlow = paramDefault;
 
   paramName = "max_speed";
   paramDefault = 10;
@@ -639,11 +507,6 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   vec3 = frontAxlePos - backAxlePos;
   this->dataPtr->wheelbaseLength = vec3.Length();
 
-  // gzerr << "wheel base length and track width: "
-  //   << this->dataPtr->wheelbaseLength << " "
-  //   << this->dataPtr->frontTrackWidth
-  //   << " " << this->dataPtr->backTrackWidth << std::endl;
-
   // Max force that can be applied to hand steering wheel
   double handWheelForce = 10;
   this->dataPtr->handWheelPID.Init(100, 0, 10, 0, 0,
@@ -677,32 +540,11 @@ void PriusHybridPlugin::OnCmdVel(const ignition::msgs::Pose &_msg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
-  this->dataPtr->gasPedalPercent = std::min(_msg.position().x(), 1.0);
+  this->dataPtr->gasPedalPercent = std::max(-1.0, std::min(1.0, _msg.position().x()));
   this->dataPtr->handWheelCmd = _msg.position().y();
-  this->dataPtr->brakePedalPercent = _msg.position().z();
 
   this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
   this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
-}
-/////////////////////////////////////////////////
-void PriusHybridPlugin::OnCmdGear(const ignition::msgs::Int32 &_msg)
-{
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-
-  // -1 reverse, 0 neutral, 1 forward
-  int state = static_cast<int>(this->dataPtr->directionState);
-  state += _msg.data();
-  state = ignition::math::clamp(state, -1, 1);
-  this->dataPtr->directionState =
-      static_cast<PriusHybridPluginPrivate::DirectionType>(state);
-}
-
-/////////////////////////////////////////////////
-void PriusHybridPlugin::OnCmdMode(const ignition::msgs::Boolean &/*_msg*/)
-{
-  // toggle ev mode
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  this->dataPtr->evMode = !this->dataPtr->evMode;
 }
 
 /////////////////////////////////////////////////
@@ -716,7 +558,6 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 69:
     case 101:
     {
-      this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent += 0.1;
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
@@ -727,7 +568,6 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     case 87:
     case 119:
     {
-      this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent = 0.0;
       this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
@@ -735,10 +575,9 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
     // q - brake
     case 113:
     {
-      this->dataPtr->gasPedalPercent = 0.0;
-      this->dataPtr->brakePedalPercent += 0.1;
-      this->dataPtr->brakePedalPercent =
-          std::min(this->dataPtr->brakePedalPercent, 1.0);
+      this->dataPtr->gasPedalPercent -= 0.1;
+      this->dataPtr->gasPedalPercent =
+          std::max(this->dataPtr->gasPedalPercent, -1.0);
       this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -770,31 +609,8 @@ void PriusHybridPlugin::KeyControlTypeA(const int _key)
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
       break;
     }
-    // z reverse
-    case 90:
-    case 122:
-    {
-      this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
-      break;
-    }
-    // x neutral
-    case 88:
-    case 120:
-    {
-      this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
-      break;
-    }
-    // c forward
-    case 67:
-    case 99:
-    {
-      this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
-      break;
-    }
-
     default:
     {
-      this->dataPtr->brakePedalPercent = 0;
       this->dataPtr->gasPedalPercent = 0;
       break;
     }
@@ -813,11 +629,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 87:
     case 119:
     {
-      this->dataPtr->brakePedalPercent = 0.0;
       this->dataPtr->gasPedalPercent += 0.1;
       this->dataPtr->gasPedalPercent =
           std::min(this->dataPtr->gasPedalPercent, 1.0);
-      this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
       this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -835,13 +649,9 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
     case 83:
     case 115:
     {
-      this->dataPtr->brakePedalPercent = 0.0;
-      if (this->dataPtr->directionState != PriusHybridPluginPrivate::REVERSE)
-        this->dataPtr->gasPedalPercent = 0.0;
-      this->dataPtr->gasPedalPercent += 0.1;
+      this->dataPtr->gasPedalPercent -= 0.1;
       this->dataPtr->gasPedalPercent =
-          std::min(this->dataPtr->gasPedalPercent, 1.0);
-      this->dataPtr->directionState = PriusHybridPluginPrivate::REVERSE;
+          std::max(this->dataPtr->gasPedalPercent, -1.0);
       this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
       break;
     }
@@ -853,35 +663,6 @@ void PriusHybridPlugin::KeyControlTypeB(const int _key)
       this->dataPtr->handWheelCmd = std::max(this->dataPtr->handWheelCmd,
           this->dataPtr->handWheelLow);
       this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
-      break;
-    }
-    // e brake
-    case 69:
-    case 101:
-    {
-      this->dataPtr->brakePedalPercent = 1.0;
-      this->dataPtr->gasPedalPercent = 0.0;
-      this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
-      break;
-    }
-    // x neutral
-    case 88:
-    case 120:
-    {
-      this->dataPtr->directionState = PriusHybridPluginPrivate::NEUTRAL;
-      break;
-    }
-    // q - EV mode
-    case 81:
-    case 113:
-    {
-      // avoid rapid mode changes due to repeated key press
-      common::Time now = this->dataPtr->world->SimTime();
-      if ((now - this->dataPtr->lastModeCmdTime).Double() > 0.3)
-      {
-        this->dataPtr->evMode = !this->dataPtr->evMode;
-        this->dataPtr->lastModeCmdTime = now;
-      }
       break;
     }
     default:
@@ -953,15 +734,10 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->lastModeCmdTime = 0;
   this->dataPtr->lastPedalCmdTime = 0;
   this->dataPtr->lastSteeringCmdTime = 0;
-  this->dataPtr->directionState = PriusHybridPluginPrivate::FORWARD;
   this->dataPtr->flWheelSteeringCmd = 0;
   this->dataPtr->frWheelSteeringCmd = 0;
   this->dataPtr->handWheelCmd = 0;
-  this->dataPtr->batteryCharge = 0.75;
-  this->dataPtr->gasConsumption = 0;
   this->dataPtr->gasPedalPercent = 0;
-  this->dataPtr->brakePedalPercent = 0;
-  this->dataPtr->handbrakePercent = 1.0;
   this->dataPtr->handWheelAngle  = 0;
   this->dataPtr->flSteeringAngle = 0;
   this->dataPtr->frSteeringAngle = 0;
@@ -1001,13 +777,11 @@ void PriusHybridPlugin::Update()
   dPtr->brWheelAngularVelocity = dPtr->brWheelJoint->GetVelocity(0);
 
   dPtr->chassisLinearVelocity = dPtr->chassisLink->WorldCoGLinearVel();
-  // Convert meter/sec to miles/hour
-  double linearVel = dPtr->chassisLinearVelocity.Length() * 2.23694;
+
+  double linearVel = dPtr->chassisLinearVelocity.Length();
 
   // Distance traveled in miles.
   this->dataPtr->odom += (fabs(linearVel) * dt/3600.0);
-
-  bool neutral = dPtr->directionState == PriusHybridPluginPrivate::NEUTRAL;
 
   this->dataPtr->lastSimTime = curTime;
 
@@ -1032,13 +806,9 @@ void PriusHybridPlugin::Update()
       this->dataPtr->handWheelAngle - this->dataPtr->handWheelCmd;
   double steerCmd = this->dataPtr->handWheelPID.Update(steerError, dt);
   this->dataPtr->handWheelJoint->SetForce(0, steerCmd);
-  //this->dataPtr->handWheelJoint->SetPosition(0, this->dataPtr->handWheelCmd);
-  //this->dataPtr->handWheelJoint->SetLowStop(0, this->dataPtr->handWheelCmd);
-  //this->dataPtr->handWheelJoint->SetHighStop(0, this->dataPtr->handWheelCmd);
 
   // PID (position) steering joints based on steering position
   // Ackermann steering geometry here
-  //  \TODO provide documentation for these equations
   double tanSteer =
       tan(this->dataPtr->handWheelCmd * this->dataPtr->steeringRatio);
   this->dataPtr->flWheelSteeringCmd = atan2(tanSteer,
@@ -1047,265 +817,68 @@ void PriusHybridPlugin::Update()
   this->dataPtr->frWheelSteeringCmd = atan2(tanSteer,
       1 + this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength *
       tanSteer);
-  // this->flWheelSteeringCmd = this->handWheelAngle * this->steeringRatio;
-  // this->frWheelSteeringCmd = this->handWheelAngle * this->steeringRatio;
 
   double flwsError =
       this->dataPtr->flSteeringAngle - this->dataPtr->flWheelSteeringCmd;
   double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
   this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
-  // this->dataPtr->flWheelSteeringJoint->SetPosition(0,
-  // this->dataPtr->flWheelSteeringCmd);
-  // this->dataPtr->flWheelSteeringJoint->SetLowStop(0,
-  // this->dataPtr->flWheelSteeringCmd);
-  // this->dataPtr->flWheelSteeringJoint->SetHighStop(0,
-  // this->dataPtr->flWheelSteeringCmd);
 
   double frwsError =
       this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
   double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
   this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
-  // this->dataPtr->frWheelSteeringJoint->SetPosition(0,
-  // this->dataPtr->frWheelSteeringCmd);
-  // this->dataPtr->frWheelSteeringJoint->SetLowStop(0,
-  // this->dataPtr->frWheelSteeringCmd);
-  // this->dataPtr->frWheelSteeringJoint->SetHighStop(0,
-  // this->dataPtr->frWheelSteeringCmd);
-
-  //static common::Time lastErrorPrintTime = 0.0;
-  //if (curTime - lastErrorPrintTime > 0.01 || curTime < lastErrorPrintTime)
-  //{
-  //  lastErrorPrintTime = curTime;
-  //  double maxSteerError =
-  //    std::abs(frwsError) > std::abs(flwsError) ? frwsError : flwsError;
-  //  double maxSteerErrPer = maxSteerError / this->dataPtr->maxSteer * 100.0;
-  //  std::cerr << std::fixed << "Max steering error: " << maxSteerErrPer
-  //    << std::endl;
-  //}
-
-  // Model low-speed caaaareep and high-speed regen braking
-  // with term added to gas/brake
-  // Cross-over speed is 7 miles/hour
-  // 10% throttle at 0 speed
-  // max 2.5% braking at higher speeds
-  double creepPercent;
-  if (std::abs(linearVel) <= 7)
-  {
-    creepPercent = 0.1 * (1 - std::abs(linearVel) / 7);
-  }
-  else
-  {
-    creepPercent = 0.025 * (7 - std::abs(linearVel));
-  }
-  creepPercent = ignition::math::clamp(creepPercent, -0.025, 0.1);
 
   // Gas pedal torque.
   // Map gas torques to individual wheels.
   // Cut off gas torque at a given wheel if max speed is exceeded.
-  // Use directionState to determine direction of that can be applied torque.
-  // Note that definition of DirectionType allows multiplication to determine
-  // torque direction.
-  // also, make sure gas pedal is at least as large as the creepPercent.
-  double gasPercent = std::max(this->dataPtr->gasPedalPercent, creepPercent);
-  double gasMultiplier = this->GasTorqueMultiplier();
+  double gasPercent = this->dataPtr->gasPedalPercent;
   double flGasTorque = 0, frGasTorque = 0, blGasTorque = 0, brGasTorque = 0;
   // Apply equal torque at left and right wheels, which is an implicit model
   // of the differential.
   if (fabs(dPtr->flWheelAngularVelocity * dPtr->flWheelRadius) < dPtr->maxSpeed &&
       fabs(dPtr->frWheelAngularVelocity * dPtr->frWheelRadius) < dPtr->maxSpeed)
   {
-    flGasTorque = gasPercent*dPtr->frontTorque * gasMultiplier;
-    frGasTorque = gasPercent*dPtr->frontTorque * gasMultiplier;
+    flGasTorque = gasPercent * dPtr->frontTorque;
+    frGasTorque = gasPercent * dPtr->frontTorque;
   }
   if (fabs(dPtr->blWheelAngularVelocity * dPtr->blWheelRadius) < dPtr->maxSpeed &&
       fabs(dPtr->brWheelAngularVelocity * dPtr->brWheelRadius) < dPtr->maxSpeed)
   {
-    blGasTorque = gasPercent * dPtr->backTorque * gasMultiplier;
-    brGasTorque = gasPercent * dPtr->backTorque * gasMultiplier;
+    blGasTorque = gasPercent * dPtr->backTorque;
+    brGasTorque = gasPercent * dPtr->backTorque;
   }
-  double throttlePower =
-      std::abs(flGasTorque * dPtr->flWheelAngularVelocity) +
-      std::abs(frGasTorque * dPtr->frWheelAngularVelocity) +
-      std::abs(blGasTorque * dPtr->blWheelAngularVelocity) +
-      std::abs(brGasTorque * dPtr->brWheelAngularVelocity);
-
-  // auto release handbrake as soon as the gas pedal is depressed
-  if (this->dataPtr->gasPedalPercent > 0)
-    this->dataPtr->handbrakePercent = 0.0;
-
-  double brakePercent = this->dataPtr->brakePedalPercent
-      + this->dataPtr->handbrakePercent;
-  // use creep braking if not in Neutral
-  if (!neutral)
-  {
-    brakePercent = std::max(brakePercent,
-        -creepPercent - this->dataPtr->gasPedalPercent);
-  }
-
-  brakePercent = ignition::math::clamp(brakePercent, 0.0, 1.0);
-  dPtr->flWheelJoint->SetParam("friction", 0,
-      dPtr->flJointFriction + brakePercent * dPtr->frontBrakeTorque);
-  dPtr->frWheelJoint->SetParam("friction", 0,
-      dPtr->frJointFriction + brakePercent * dPtr->frontBrakeTorque);
-  dPtr->blWheelJoint->SetParam("friction", 0,
-      dPtr->blJointFriction + brakePercent * dPtr->backBrakeTorque);
-  dPtr->brWheelJoint->SetParam("friction", 0,
-      dPtr->brJointFriction + brakePercent * dPtr->backBrakeTorque);
 
   this->dataPtr->flWheelJoint->SetForce(0, flGasTorque);
   this->dataPtr->frWheelJoint->SetForce(0, frGasTorque);
   this->dataPtr->blWheelJoint->SetForce(0, blGasTorque);
   this->dataPtr->brWheelJoint->SetForce(0, brGasTorque);
 
-  // gzerr << "gas and brake torque " << flGasTorque << " "
-  //       << flBrakeTorque << std::endl;
-
-  // Battery
-
-  // Speed x throttle regions
-  //
-  //    throttle |
-  //             |
-  //        high |____
-  //             |    |
-  //      medium |____|_____
-  //             |    |     |
-  //         low |____|_____|_________
-  //              low  med   high    speed
-
-  bool engineOn;
-  bool regen = !neutral;
-  double batteryChargePower = 0;
-  double batteryDischargePower = 0;
-
-  // Battery is below threshold
-  if (this->dataPtr->batteryCharge < this->dataPtr->batteryLowThreshold)
+  // Publish prius car data.
+  if ((curTime - this->dataPtr->lastMsgTime).Double() > .5)
   {
-    // Gas engine is on and recharing battery
-    engineOn = true;
-    this->dataPtr->evMode = false;
-    batteryChargePower = dPtr->kLowBatteryChargePower;
-    throttlePower += dPtr->kLowBatteryChargePower;
-  }
-  // Neutral and battery not low
-  else if (neutral)
-  {
-    // Gas engine is off, battery not recharged
-    engineOn = false;
-  }
-  // Speed below medium-high threshold, throttle below low-medium threshold
-  else if (linearVel < this->dataPtr->speedMediumHigh &&
-      this->dataPtr->gasPedalPercent <= this->dataPtr->kGasPedalLowMedium)
-  {
-    // Gas engine is off, running on battery
-    engineOn = false;
-    batteryDischargePower = throttlePower;
-  }
-  // EV mode, speed below low-medium threshold, throttle below medium-high
-  // threshold
-  else if (this->dataPtr->evMode && linearVel < this->dataPtr->speedLowMedium
-      && this->dataPtr->gasPedalPercent <= this->dataPtr->kGasPedalMediumHigh)
-  {
-    // Gas engine is off, running on battery
-    engineOn = false;
-    batteryDischargePower = throttlePower;
-  }
-  else
-  {
-    // Gas engine is on
-    engineOn = true;
-    this->dataPtr->evMode = false;
-  }
-
-  if (regen)
-  {
-    // regen max torque at same level as throttle limit in EV mode
-    // but only at the front wheels
-    batteryChargePower +=
-      std::min(this->dataPtr->kGasPedalMediumHigh, brakePercent)*(
-        dPtr->frontBrakeTorque * std::abs(dPtr->flWheelAngularVelocity) +
-        dPtr->frontBrakeTorque * std::abs(dPtr->frWheelAngularVelocity) +
-        dPtr->backBrakeTorque * std::abs(dPtr->blWheelAngularVelocity) +
-        dPtr->backBrakeTorque * std::abs(dPtr->brWheelAngularVelocity));
-  }
-  dPtr->batteryCharge += dt / 3600 * (
-      batteryChargePower / dPtr->batteryChargeWattHours
-    - batteryDischargePower / dPtr->batteryDischargeWattHours);
-  if (dPtr->batteryCharge > 1)
-  {
-    dPtr->batteryCharge = 1;
-  }
-
-  // engine has minimum gas flow if the throttle is pressed at all
-  if (engineOn && throttlePower > 0)
-  {
-    dPtr->gasConsumption += dt*(dPtr->minGasFlow
-        + throttlePower / dPtr->gasEfficiency / dPtr->kGasEnergyDensity);
-  }
-
-  // Accumulated mpg since last reset
-  // max value: 999.9
-  double mpg = std::min(999.9,
-      dPtr->odom / std::max(dPtr->gasConsumption, 1e-6));
-
-  if ((curTime - this->dataPtr->lastMsgTime) > .5)
-  {
-    this->dataPtr->posePub.Publish(
-        ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
-
-    ignition::msgs::Double_V consoleMsg;
+    // No idea what this does to the simulation. Keeping it just to be safe.
+    this->dataPtr->posePub.Publish(ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
 
     // linearVel (meter/sec) = (2*PI*r) * (rad/sec).
     double linearVel = (2.0 * IGN_PI * this->dataPtr->flWheelRadius) *
       ((this->dataPtr->flWheelAngularVelocity +
         this->dataPtr->frWheelAngularVelocity) * 0.5);
 
-    // Convert meter/sec to miles/hour
-    linearVel *= 2.23694;
+    // Distance traveled in meters.
+    this->dataPtr->odom += (fabs(linearVel) * dt);
 
-    // Distance traveled in miles.
-    this->dataPtr->odom += (fabs(linearVel) * dt/3600);
-
-    // \todo: Actually compute MPG
-    double mpg = 1.0 / std::max(linearVel, 0.0);
-
-    // Gear information: 1=drive, 2=reverse, 3=neutral
-    if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
-      consoleMsg.add_data(1.0);
-    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::REVERSE)
-      consoleMsg.add_data(2.0);
-    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::NEUTRAL)
-      consoleMsg.add_data(3.0);
-
-    // MPH. A speedometer does not go negative.
-    consoleMsg.add_data(std::max(linearVel, 0.0));
-
-    // MPG
-    consoleMsg.add_data(mpg);
-
-    // Miles
-    consoleMsg.add_data(this->dataPtr->odom);
-
-    // EV mode
-    this->dataPtr->evMode ? consoleMsg.add_data(1.0) : consoleMsg.add_data(0.0);
-
-    // Battery state
-    consoleMsg.add_data(this->dataPtr->batteryCharge);
-
-    this->dataPtr->consolePub.Publish(consoleMsg);
-
-    // Output prius car data.
-    this->dataPtr->posePub.Publish(
-        ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
+    // Publish current speed via ROS.
+    std_msgs::Float32 msg;
+    msg.data = linearVel;
+    this->dataPtr->speedPub.publish(msg);
 
     this->dataPtr->lastMsgTime = curTime;
   }
 
-  // reset if last command is more than x sec ago
+  // Reset if last command is more than x sec ago
   if ((curTime - this->dataPtr->lastPedalCmdTime).Double() > 0.3)
   {
     this->dataPtr->gasPedalPercent = 0.0;
-    this->dataPtr->brakePedalPercent = 0.0;
   }
 
   if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 0.3)
@@ -1350,19 +923,6 @@ double PriusHybridPlugin::CollisionRadius(physics::CollisionPtr _coll)
     physics::SphereShape *sph =
         static_cast<physics::SphereShape*>(_coll->GetShape().get());
     return sph->GetRadius();
-  }
-  return 0;
-}
-
-/////////////////////////////////////////////////
-double PriusHybridPlugin::GasTorqueMultiplier()
-{
-  // if (this->dataPtr->keyState == ON)
-  {
-    if (this->dataPtr->directionState == PriusHybridPluginPrivate::FORWARD)
-      return 1.0;
-    else if (this->dataPtr->directionState == PriusHybridPluginPrivate::REVERSE)
-      return -1.0;
   }
   return 0;
 }
