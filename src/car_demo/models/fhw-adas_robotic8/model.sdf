@@ -1,0 +1,74 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='fhw-adas_robotic8'>
+    <static>1</static>
+    <include>
+      <uri>model://fhw-adas_tile1-tintersection</uri>
+      <pose>0 0 0 0 0 -1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-preintersection</uri>
+      <pose>0 -10 0 0 0 -1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-preintersection</uri>
+      <pose>10 0 0 0 0 1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-preintersection</uri>
+      <pose>10 -10 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile4-turn</uri>
+      <pose>0 -40 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile4-turn</uri>
+      <pose>40 -40 0 0 0 1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile4-turn</uri>
+      <pose>0 30 0 0 0 -1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile4-turn</uri>
+      <pose>40 30 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-preintersection</uri>
+      <pose>30 -10 0 0 0 -1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-preintersection</uri>
+      <pose>40 0 0 0 0 1.570796</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-preintersection</uri>
+      <pose>30 0 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://fhw-adas_tile1-tintersection</uri>
+      <pose>40 -10 0 0 0 1.570796</pose>
+    </include>
+    
+    <link name='floor'>
+      <static>1</static>
+      <pose>20 -5 0 0 0 0</pose>
+      <visual name='visual'>
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size>40 70</size>
+          </plane>
+        </geometry>
+        <material>
+          <lighting>1</lighting>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

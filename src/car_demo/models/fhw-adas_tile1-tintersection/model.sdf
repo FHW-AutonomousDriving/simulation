@@ -1,0 +1,45 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='fhw-adas_tile1-tintersection'>
+    <link name='straight'>
+      <visual name='visual'>
+        <geometry>
+          <polyline>
+            <height>0.002</height>
+            <point>9.336 10.000</point>
+            <point>9.394 9.755</point>
+            <point>9.543 9.543</point>
+            <point>9.755 9.394</point>
+            <point>10.000 9.336</point>
+            <point>10.000 9.736</point>
+            <point>9.824 9.824</point>
+            <point>9.736 10.000</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>0.000 0.300</point>
+            <point>10.000 0.300</point>
+            <point>10.000 0.700</point>
+            <point>0.000 0.700</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>0.000 9.315</point>
+            <point>0.272 9.370</point>
+            <point>0.495 9.521</point>
+            <point>0.646 9.744</point>
+            <point>0.701 10.000</point>
+            <point>0.301 10.000</point>
+            <point>0.213 9.802</point>
+            <point>0.000 9.715</point>
+          </polyline>
+        </geometry>
+        <material>
+          <lighting>0</lighting>
+        </material>
+      </visual>
+    </link>
+    <static>1</static>
+  </model>
+</sdf>
+

@@ -1,0 +1,125 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='fhw-adas_tile4-turn'>
+    <link name='straight'>
+      <visual name='visual'>
+        <geometry>
+          <polyline>
+            <height>0.002</height>
+            <point>0.299 20.020</point>
+            <point>0.399 18.000</point>
+            <point>0.699 16.050</point>
+            <point>1.199 14.160</point>
+            <point>1.799 12.350</point>
+            <point>2.699 10.630</point>
+            <point>3.699 8.994</point>
+            <point>4.800 7.475</point>
+            <point>6.099 6.076</point>
+            <point>7.501 4.806</point>
+            <point>9.001 3.670</point>
+            <point>10.600 2.683</point>
+            <point>12.300 1.854</point>
+            <point>14.100 1.191</point>
+            <point>16.000 0.706</point>
+            <point>18.000 0.407</point>
+            <point>20.000 0.305</point>
+            <point>20.000 0.705</point>
+            <point>18.000 0.805</point>
+            <point>16.100 1.097</point>
+            <point>14.300 1.573</point>
+            <point>12.500 2.222</point>
+            <point>10.800 3.033</point>
+            <point>9.200 4.001</point>
+            <point>7.699 5.112</point>
+            <point>6.400 6.359</point>
+            <point>5.099 7.729</point>
+            <point>4.001 9.214</point>
+            <point>3.000 10.810</point>
+            <point>2.199 12.500</point>
+            <point>1.599 14.280</point>
+            <point>1.099 16.120</point>
+            <point>0.799 18.040</point>
+            <point>0.699 20.020</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>4.800 18.910</point>
+            <point>5.199 16.510</point>
+            <point>5.599 16.600</point>
+            <point>5.199 18.930</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>6.001 14.200</point>
+            <point>7.099 12.030</point>
+            <point>7.400 12.240</point>
+            <point>6.300 14.350</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>8.501 10.070</point>
+            <point>10.200 8.362</point>
+            <point>10.500 8.666</point>
+            <point>8.800 10.330</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>9.300 20.020</point>
+            <point>9.401 18.920</point>
+            <point>9.501 17.860</point>
+            <point>9.800 16.830</point>
+            <point>10.100 15.850</point>
+            <point>10.600 14.920</point>
+            <point>11.100 14.030</point>
+            <point>11.700 13.210</point>
+            <point>12.400 12.450</point>
+            <point>13.200 11.760</point>
+            <point>14.000 11.140</point>
+            <point>14.900 10.600</point>
+            <point>15.800 10.150</point>
+            <point>16.800 9.788</point>
+            <point>17.800 9.523</point>
+            <point>18.900 9.362</point>
+            <point>20.000 9.306</point>
+            <point>20.000 9.706</point>
+            <point>18.900 9.759</point>
+            <point>17.900 9.915</point>
+            <point>16.900 10.170</point>
+            <point>16.000 10.510</point>
+            <point>15.100 10.960</point>
+            <point>14.200 11.460</point>
+            <point>13.400 12.070</point>
+            <point>12.700 12.730</point>
+            <point>12.100 13.460</point>
+            <point>11.500 14.260</point>
+            <point>10.900 15.100</point>
+            <point>10.500 16.010</point>
+            <point>10.200 16.950</point>
+            <point>9.901 17.940</point>
+            <point>9.800 18.960</point>
+            <point>9.700 20.020</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>12.200 6.951</point>
+            <point>14.400 5.877</point>
+            <point>14.500 6.248</point>
+            <point>12.400 7.295</point>
+          </polyline>
+          <polyline>
+            <height>0.002</height>
+            <point>16.700 5.163</point>
+            <point>19.100 4.832</point>
+            <point>19.100 5.232</point>
+            <point>16.800 5.554</point>
+          </polyline>
+        </geometry>
+        <material>
+          <lighting>0</lighting>
+        </material>
+      </visual>
+    </link>
+    <static>1</static>
+  </model>
+</sdf>
+
