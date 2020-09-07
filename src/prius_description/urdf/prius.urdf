@@ -273,7 +273,7 @@
   <joint name="center_laser_joint" type="fixed">
     <parent link="chassis"/>
     <child link="center_laser_link"/>
-    <origin xyz="0 -2.3 0.6" rpy="0 0 -1.5707"/>
+    <origin xyz="0 -2.2 0.6" rpy="0 0 -1.5707"/>
   </joint>
 
   <gazebo reference="base_link_connection">
@@ -343,7 +343,7 @@
   </gazebo>
 
   <gazebo reference="center_laser_link">
-    <sensor name='center_laser_sensor' type='ray'>
+    <sensor name='center_laser_sensor' type='gpu_ray'>
       <ray>
         <scan>
           <horizontal>
@@ -359,13 +359,13 @@
           <resolution>0.01</resolution>
         </range>
       </ray>
-      <plugin name='center_laser' filename='libgazebo_ros_block_laser.so'>
+      <plugin name='center_laser' filename='libgazebo_ros_gpu_laser.so'>
         <topicName>/prius/center_laser/scan</topicName>
         <frameName>center_laser_link</frameName>
       </plugin>
       <always_on>1</always_on>
       <update_rate>10</update_rate>
-      <visualize>1</visualize>
+      <visualize>0</visualize>
     </sensor>
   </gazebo>
 
@@ -386,7 +386,7 @@
         <noise>
           <type>gaussian</type>
           <mean>0.0</mean>
-          <stddev>0.007</stddev>
+          <stddev>0.07</stddev>
         </noise>
       </camera>
       <plugin name="front_camera_controller" filename="libgazebo_ros_camera.so">
