@@ -28,7 +28,7 @@
       <shadows>1</shadows>
     </scene>
     
-    <model name='ground_plane'>
+    <model name='ground_collision'>
       <static>1</static>
       <link name='link'>
         <collision name='collision'>
@@ -68,7 +68,7 @@
     
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>3.75514 -4.68984 4.68487 0 0.631643 2.5802</pose>
+        <pose frame=''>80 -60 40 0 0.5 2.5</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
