@@ -1,11 +1,13 @@
 <?xml version='1.0'?>
 <sdf version='1.6'>
   <model name='fhw-adas_tile4-turn'>
-    <link name='straight'>
+    <static>1</static>
+    <link name='link'>
+      <gravity>0</gravity>
       <visual name='visual'>
         <geometry>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>0.299 20.020</point>
             <point>0.399 18.000</point>
             <point>0.699 16.050</point>
@@ -42,28 +44,28 @@
             <point>0.699 20.020</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>4.800 18.910</point>
             <point>5.199 16.510</point>
             <point>5.599 16.600</point>
             <point>5.199 18.930</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>6.001 14.200</point>
             <point>7.099 12.030</point>
             <point>7.400 12.240</point>
             <point>6.300 14.350</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>8.501 10.070</point>
             <point>10.200 8.362</point>
             <point>10.500 8.666</point>
             <point>8.800 10.330</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>9.300 20.020</point>
             <point>9.401 18.920</point>
             <point>9.501 17.860</point>
@@ -100,14 +102,14 @@
             <point>9.700 20.020</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>12.200 6.951</point>
             <point>14.400 5.877</point>
             <point>14.500 6.248</point>
             <point>12.400 7.295</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>16.700 5.163</point>
             <point>19.100 4.832</point>
             <point>19.100 5.232</point>
@@ -115,11 +117,14 @@
           </polyline>
         </geometry>
         <material>
-          <lighting>0</lighting>
+          <lighting>1</lighting>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/White</name>
+          </script>
         </material>
       </visual>
     </link>
-    <static>1</static>
   </model>
 </sdf>
 

@@ -65,5 +65,13 @@
     <include>
       <uri>model://fhw-adas_robotic8</uri>
     </include>
+    
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>3.75514 -4.68984 4.68487 0 0.631643 2.5802</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
   </world>
 </sdf>

@@ -1,11 +1,13 @@
 <?xml version='1.0'?>
 <sdf version='1.6'>
   <model name='fhw-adas_tile1-tintersection'>
-    <link name='straight'>
+    <static>1</static>
+    <link name='link'>
+      <gravity>0</gravity>
       <visual name='visual'>
         <geometry>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>9.336 10.000</point>
             <point>9.394 9.755</point>
             <point>9.543 9.543</point>
@@ -16,14 +18,14 @@
             <point>9.736 10.000</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>0.000 0.300</point>
             <point>10.000 0.300</point>
             <point>10.000 0.700</point>
             <point>0.000 0.700</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>0.000 9.315</point>
             <point>0.272 9.370</point>
             <point>0.495 9.521</point>
@@ -35,11 +37,14 @@
           </polyline>
         </geometry>
         <material>
-          <lighting>0</lighting>
+          <lighting>1</lighting>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/White</name>
+          </script>
         </material>
       </visual>
     </link>
-    <static>1</static>
   </model>
 </sdf>
 

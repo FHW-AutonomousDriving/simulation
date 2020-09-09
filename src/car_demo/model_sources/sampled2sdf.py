@@ -2,17 +2,22 @@ import sys
 import re
 
 SCALE_FACTOR = 0.1
-SDF_HEIGHT = 0.002
+SDF_HEIGHT = 0.004
 TEMPLATE = '''<?xml version='1.0'?>
 <sdf version='1.6'>
   <model name='%s'>
     <static>1</static>
-    <link name='straight'>
+    <link name='link'>
+      <gravity>0</gravity>
       <visual name='visual'>
         <geometry>%s
         </geometry>
         <material>
-          <lighting>0</lighting>
+          <lighting>1</lighting>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/White</name>
+          </script>
         </material>
       </visual>
     </link>

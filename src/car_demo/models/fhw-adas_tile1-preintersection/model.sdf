@@ -1,18 +1,20 @@
 <?xml version='1.0'?>
 <sdf version='1.6'>
   <model name='fhw-adas_tile1-preintersection'>
-    <link name='straight'>
+    <static>1</static>
+    <link name='link'>
+      <gravity>0</gravity>
       <visual name='visual'>
         <geometry>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>0.000 0.300</point>
             <point>10.000 0.300</point>
             <point>10.000 0.700</point>
             <point>0.000 0.700</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>0.000 4.807</point>
             <point>3.805 4.807</point>
             <point>3.805 5.207</point>
@@ -23,7 +25,7 @@
             <point>0.000 9.716</point>
           </polyline>
           <polyline>
-            <height>0.002</height>
+            <height>0.004</height>
             <point>8.600 4.800</point>
             <point>8.600 5.200</point>
             <point>6.200 5.200</point>
@@ -31,11 +33,14 @@
           </polyline>
         </geometry>
         <material>
-          <lighting>0</lighting>
+          <lighting>1</lighting>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/White</name>
+          </script>
         </material>
       </visual>
     </link>
-    <static>1</static>
   </model>
 </sdf>
 

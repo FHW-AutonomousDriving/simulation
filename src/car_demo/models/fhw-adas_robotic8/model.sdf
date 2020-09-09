@@ -1,74 +1,345 @@
 <?xml version='1.0'?>
 <sdf version='1.6'>
   <model name='fhw-adas_robotic8'>
-    <static>1</static>
+    <static>0</static>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-tintersection_south</name>
       <uri>model://fhw-adas_tile1-tintersection</uri>
       <pose>0 0 0 0 0 -1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-preintersection_south-westwards</name>
       <uri>model://fhw-adas_tile1-preintersection</uri>
       <pose>0 -10 0 0 0 -1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-preintersection_south-southwards</name>
       <uri>model://fhw-adas_tile1-preintersection</uri>
       <pose>10 0 0 0 0 1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-preintersection_south-eastwards</name>
       <uri>model://fhw-adas_tile1-preintersection</uri>
       <pose>10 -10 0 0 0 0</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile4-turn_southeast</name>
       <uri>model://fhw-adas_tile4-turn</uri>
       <pose>0 -40 0 0 0 0</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile4-turn_northeast</name>
       <uri>model://fhw-adas_tile4-turn</uri>
       <pose>40 -40 0 0 0 1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile4-turn_northwest</name>
       <uri>model://fhw-adas_tile4-turn</uri>
       <pose>0 30 0 0 0 -1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile4-turn_southwest</name>
       <uri>model://fhw-adas_tile4-turn</uri>
       <pose>40 30 0 0 0 3.14159</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-preintersection_north-eastwards</name>
       <uri>model://fhw-adas_tile1-preintersection</uri>
       <pose>30 -10 0 0 0 -1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-preintersection_north-northwards</name>
       <uri>model://fhw-adas_tile1-preintersection</uri>
       <pose>40 0 0 0 0 1.570796</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-preintersection_north-westwards</name>
       <uri>model://fhw-adas_tile1-preintersection</uri>
       <pose>30 0 0 0 0 3.14159</pose>
     </include>
     <include>
+      <static>1</static>
+      <name>fhw-adas_tile1-tintersection_north</name>
       <uri>model://fhw-adas_tile1-tintersection</uri>
       <pose>40 -10 0 0 0 1.570796</pose>
     </include>
     
-    <link name='floor'>
+    <model name='floor'>
       <static>1</static>
-      <pose>20 -5 0 0 0 0</pose>
-      <visual name='visual'>
-        <geometry>
-          <plane>
-            <normal>0 0 1</normal>
-            <size>40 70</size>
-          </plane>
-        </geometry>
-        <material>
-          <lighting>1</lighting>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/DarkGrey</name>
-          </script>
-        </material>
-      </visual>
-    </link>
+      <link name='floor'>
+        <pose>20 -5 0 0 0 0</pose>
+        <visual name='visual'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>40 70</size>
+            </plane>
+          </geometry>
+          <material>
+            <lighting>1</lighting>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/DarkGrey</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+  
+    <!-- Begrenzungsblöcke -->
+    <!-- südliche Gerade -->
+    <include>
+      <name>fhw-adas_guidebox-4</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 -20 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox-3</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 -16 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox-2</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 -12 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox-1</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 -8 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox0</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 -4 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox1</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 0 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox2</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 4 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox3</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 8 1 0 0 0</pose>
+    </include>
+    <!-- /südliche Gerade -->
+    <!-- südlichewestliche Kurve -->
+    <include>
+      <name>fhw-adas_guidebox4</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 12 1 0 0 -0.1</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox5</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>0.5 17 1 0 0 -0.3</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox6</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>2.5 21 1 0 0 -0.55</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox7</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>5 24 1 0 0 -0.75</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox8</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>8 26.5 1 0 0 -0.95</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox9</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>12 29 1 0 0 -1.15</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox10</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>16 30 1 0 0 -1.35</pose>
+    </include>
+    <!-- /südlichewestliche Kurve -->
+    <include>
+      <name>fhw-adas_guidebox11</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>20 30.5 1 0 0 -1.570796</pose>
+    </include>
+    <!-- nordwestliche Kurve -->
+    <include>
+      <name>fhw-adas_guidebox18</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 12 1 0 0 -3.05</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox17</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>39.5 17 1 0 0 -2.85</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox16</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>37.5 21 1 0 0 -2.6</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox15</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>35 24 1 0 0 -2.4</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox14</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>32 26.5 1 0 0 -2.2</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox13</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>28 29 1 0 0 -2</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox12</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>24 30 1 0 0 -1.8</pose>
+    </include>
+    <!-- /nordwestliche Kurve -->
+    <!-- nördliche Gerade -->
+    <include>
+      <name>fhw-adas_guidebox21</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 0 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox20</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 4 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox19</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 8 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox22</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 -4 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox23</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 -8 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox24</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 -12 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox25</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 -16 1 0 0 0</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox26</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 -20 1 0 0 0</pose>
+    </include>
+    <!-- /nördliche Gerade -->
+    <!-- nordöstliche Kurve -->
+    <include>
+      <name>fhw-adas_guidebox27</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>40.5 -23 1 0 0 3.05</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox28</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>39.5 -27 1 0 0 2.85</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox29</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>37.5 -31 1 0 0 2.6</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox30</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>35 -34 1 0 0 2.4</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox31</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>32 -36.5 1 0 0 2.2</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox32</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>28 -39 1 0 0 2</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox33</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>24 -40 1 0 0 1.8</pose>
+    </include>
+    <!-- /nordöstliche Kurve -->
+    <include>
+      <name>fhw-adas_guidebox34</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>20 -40.5 1 0 0 1.570796</pose>
+    </include>
+    <!-- südöstliche Kurve -->
+    <include>
+      <name>fhw-adas_guidebox41</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>-0.5 -23 1 0 0 0.1</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox40</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>0.5 -27 1 0 0 0.3</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox39</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>2.5 -31 1 0 0 0.55</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox38</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>5 -34 1 0 0 0.75</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox37</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>8 -36.5 1 0 0 0.95</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox36</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>12 -39 1 0 0 1.15</pose>
+    </include>
+    <include>
+      <name>fhw-adas_guidebox35</name>
+      <uri>model://fhw-adas_guidebox</uri>
+      <pose>16 -40 1 0 0 1.35</pose>
+    </include>
+    <!-- /südöstliche Kurve -->
+    <!-- /Begrenzungsblöcke -->
   </model>
 </sdf>
