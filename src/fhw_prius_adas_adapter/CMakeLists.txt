@@ -4,6 +4,7 @@ add_compile_options(-std=c++14)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
+  prius_msgs
 )
 catkin_package(
   CATKIN_DEPENDS roscpp sensor_msgs
