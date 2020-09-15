@@ -383,11 +383,13 @@
           <near>0.02</near>
           <far>300</far>
         </clip>
+        <!--
         <noise>
           <type>gaussian</type>
           <mean>0.0</mean>
           <stddev>0.03</stddev>
         </noise>
+        -->
       </camera>
       <plugin name="front_camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>false</alwaysOn>
