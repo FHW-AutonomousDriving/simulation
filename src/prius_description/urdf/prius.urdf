@@ -2,33 +2,33 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="prius">
   <!--- Surface properties must come first? -->
   <gazebo reference="front_left_wheel">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu1>5</mu1>
+    <mu2>5</mu2>
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
   </gazebo>
   <gazebo reference="front_right_wheel">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu1>5</mu1>
+    <mu2>5</mu2>
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
   </gazebo>
   <gazebo reference="rear_left_wheel">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu1>5</mu1>
+    <mu2>5</mu2>
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
   </gazebo>
   <gazebo reference="rear_right_wheel">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu1>5</mu1>
+    <mu2>5</mu2>
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
   </gazebo>
 
   <link name="base_link">
     <inertial>
-      <mass value="1"/>
+      <mass value="0.1"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
   </link>
@@ -111,28 +111,28 @@
     </collision>
 
     <inertial>
-      <mass value="1356.0"/>
+      <mass value="135.60"/>
       <origin xyz="0 0 0.48" rpy="0 0 1.5708"/>
-      <inertia ixx="2581.13354740" ixy="0.0" ixz="0.0" iyy="591.30846112" iyz="0.0" izz="2681.95008628"/>
+      <inertia ixx="258.113354740" ixy="0.0" ixz="0.0" iyy="59.130846112" iyz="0.0" izz="26.8195008628"/>
     </inertial>
   </link>
   <link name="fl_axle">
     <inertial>
-      <mass value="1"/>
+      <mass value=".1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.004" ixy="0.0" ixz="0.0" iyy="0.004" iyz="0.0" izz="0.004"/>
     </inertial>
   </link>
   <link name="fr_axle">
     <inertial>
-      <mass value="1"/>
+      <mass value=".1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.004" ixy="0.0" ixz="0.0" iyy="0.004" iyz="0.0" izz="0.004"/>
     </inertial>
   </link>
   <link name="front_left_wheel">
     <inertial>
-      <mass value="11"/>
+      <mass value="1.1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
@@ -150,7 +150,7 @@
   </link>
   <link name="front_right_wheel">
     <inertial>
-      <mass value="11"/>
+      <mass value="1.1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
@@ -168,7 +168,7 @@
   </link>
   <link name="rear_left_wheel">
     <inertial>
-      <mass value="11"/>
+      <mass value="1.1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
@@ -186,7 +186,7 @@
   </link>
   <link name="rear_right_wheel">
     <inertial>
-      <mass value="11"/>
+      <mass value="1.1"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
     </inertial>
@@ -204,7 +204,7 @@
   </link>
   <link name="steering_wheel">
     <inertial>
-      <mass value="1.0"/>
+      <mass value="0.10"/>
       <inertia ixx="0.14583300" ixy="0.0" ixz="0.0" iyy="0.14583300" iyz="0.0" izz="0.125"/>
     </inertial>
     <visual>
