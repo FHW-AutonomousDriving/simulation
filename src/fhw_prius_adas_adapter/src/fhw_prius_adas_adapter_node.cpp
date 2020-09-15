@@ -9,10 +9,7 @@ int main(int argc, char **argv)
   ros::Publisher pub = n.advertise<sensor_msgs::LaserScan>("/lidar/scan", 1);
   boost::function<void (const sensor_msgs::LaserScan&)> callback = [pub](const sensor_msgs::LaserScan& msg) {
     sensor_msgs::LaserScan outmsg = msg;
-    for (size_t i = 0; i < 32; i++) {
-      outmsg.ranges[i] = std::numeric_limits<float>::infinity();
-    };
-    for (size_t i = outmsg.ranges.size()-32; i < outmsg.ranges.size(); i++) {
+    for (size_t i = 71; i < 274; i++) {
       outmsg.ranges[i] = std::numeric_limits<float>::infinity();
     };
     pub.publish(outmsg);
