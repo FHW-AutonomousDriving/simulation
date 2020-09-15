@@ -9,4 +9,5 @@
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" >
   </node>
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 3 -y -7 -z 0.5 -Y -1.570796 -model prius"/>
+  <node name="fhw_prius_adas_adapter" pkg="fhw_prius_adas_adapter" type="node" output="screen"/>
 </launch>
