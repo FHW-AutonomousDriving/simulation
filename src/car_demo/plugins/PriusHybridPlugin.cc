@@ -124,12 +124,6 @@ namespace gazebo
     /// \brief Max steering angle
     public: double maxSteer = 0;
 
-    /// \brief Max torque that can be applied to the front brakes
-    public: double frontBrakeTorque = 0;
-
-    /// \brief Max torque that can be applied to the rear brakes
-    public: double backBrakeTorque = 0;
-
     /// \brief Angle ratio between the steering wheel and the front wheels
     public: double steeringRatio = 0;
 
