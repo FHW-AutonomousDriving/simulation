@@ -868,17 +868,6 @@ void PriusHybridPlugin::Update()
 
     this->dataPtr->lastMsgTime = curTime;
   }
-
-  // Reset if last command is more than x sec ago
-  if ((curTime - this->dataPtr->lastPedalCmdTime).Double() > 0.3)
-  {
-    this->dataPtr->gasPedalPercent = 0.0;
-  }
-
-  if ((curTime - this->dataPtr->lastSteeringCmdTime).Double() > 0.3)
-  {
-    this->dataPtr->handWheelCmd = 0;
-  }
 }
 
 /////////////////////////////////////////////////
