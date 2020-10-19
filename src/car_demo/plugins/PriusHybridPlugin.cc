@@ -105,8 +105,11 @@ namespace gazebo
     /// \brief Last sim time when a steering command is received
     public: common::Time lastSteeringCmdTime;
 
-    /// \brief Last sim time when a EV mode command is received
-    public: common::Time lastModeCmdTime;
+    /// \brief Last sim time when send throttle was not zero
+    public: common::Time firstThrottleResetTime;
+
+    /// \brief Whether the drive has been enabled
+    public: bool driveEnabled = false;
 
     /// \brief Chassis aerodynamic drag force coefficient,
     /// with units of [N / (m/s)^2]
@@ -238,8 +241,9 @@ PriusHybridPlugin::PriusHybridPlugin()
 
 void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
 {
-  this->dataPtr->lastSteeringCmdTime = this->dataPtr->world->SimTime();
-  this->dataPtr->lastPedalCmdTime = this->dataPtr->world->SimTime();
+  common::Time curTime = this->dataPtr->world->SimTime();
+  this->dataPtr->lastSteeringCmdTime = curTime;
+  this->dataPtr->lastPedalCmdTime = curTime;
 
   // Steering wheel command
   double handCmd = (msg->steer < 0.)
@@ -252,6 +256,29 @@ void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
 
   // Throttle command
   double throttle = ignition::math::clamp(msg->throttle, -1.0, 1.0);
+
+  // Simulate Audi drive reset phase
+  if (!this->dataPtr->driveEnabled) {
+    //gzdbg << "Drive is not enabled." << std::endl;
+    bool throttleZero = std::abs(throttle) < .01;
+    if (throttleZero) {
+        //gzdbg << "Throttle is zero." << std::endl;
+      if (this->dataPtr->firstThrottleResetTime == 0) {
+        this->dataPtr->firstThrottleResetTime = curTime;
+      }
+      double timeZero = (curTime - this->dataPtr->firstThrottleResetTime).Double();
+      //gzdbg << "Time throttle has been zero: " << timeZero << std::endl;
+      if (timeZero > 1) {
+        this->dataPtr->driveEnabled = true;
+      }
+    }
+    if (!throttleZero) {
+      this->dataPtr->firstThrottleResetTime = 0;
+      gzwarn << "Must send at least one second of zero throttle for enabling drive." << std::endl;
+    }
+    throttle = 0.0;
+  }
+
   this->dataPtr->gasPedalPercent = throttle;
 
 }
@@ -725,7 +752,8 @@ void PriusHybridPlugin::Reset()
   this->dataPtr->handWheelPID.Reset();
   this->dataPtr->lastMsgTime = 0;
   this->dataPtr->lastSimTime = 0;
-  this->dataPtr->lastModeCmdTime = 0;
+  this->dataPtr->firstThrottleResetTime = 0;
+  this->dataPtr->driveEnabled = false;
   this->dataPtr->lastPedalCmdTime = 0;
   this->dataPtr->lastSteeringCmdTime = 0;
   this->dataPtr->flWheelSteeringCmd = 0;
