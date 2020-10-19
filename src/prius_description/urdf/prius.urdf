@@ -254,14 +254,15 @@
     <child link="rear_left_wheel"/>
     <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
+    <dynamics damping="4.0" friction="0.0"/>
   </joint>
   <joint name="rear_right_wheel_joint" type="continuous">
     <parent link="chassis"/>
     <child link="rear_right_wheel"/>
     <origin xyz="-0.793 1.45 0.3" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
+    <dynamics damping="4.0" friction="0.0"/>
   </joint>
-
 
   <!-- Sensor links and fixed joints -->
   <link name="center_laser_link">
