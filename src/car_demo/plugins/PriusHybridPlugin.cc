@@ -876,7 +876,7 @@ void PriusHybridPlugin::Update()
   this->dataPtr->brWheelJoint->SetForce(0, brGasTorque);
 
   // Publish prius car data.
-  if ((curTime - this->dataPtr->lastMsgTime).Double() > .5)
+  if ((curTime - this->dataPtr->lastMsgTime).Double() > .0125)
   {
     // No idea what this does to the simulation. Keeping it just to be safe.
     this->dataPtr->posePub.Publish(ignition::msgs::Convert(this->dataPtr->model->WorldPose()));
