@@ -1,9 +1,8 @@
-#include <ros/ros.h>
-#include <sensor_msgs/LaserScan.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
+#include <prius_msgs/msg/control.hpp>
+#include <std_msgs/msg/float32.hpp>
 #include <limits>
-#include <std_msgs/Float32.h>
-#include <prius_msgs/Control.h>
-#include <gazebo_msgs/LinkStates.h>
 
 int main(int argc, char **argv)
 {
