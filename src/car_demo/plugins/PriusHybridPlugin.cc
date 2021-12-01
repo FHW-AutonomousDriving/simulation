@@ -15,6 +15,8 @@
  *
 */
 
+// TODO: IMPORTANT: find out why pthread_stack_min.h is not included implicitly for defining PTHREAD_STACK_MIN
+#include <bits/pthread_stack_min.h>
 #include <algorithm>
 #include <fstream>
 #include <mutex>
@@ -29,18 +31,18 @@
 #include <gazebo/common/Time.hh>
 #include "PriusHybridPlugin.hh"
 
-#include <ros/ros.h>
-#include <std_msgs/Float32.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float32.hpp>
 
 namespace gazebo
 {
   class PriusHybridPluginPrivate
   {
-    public: ros::NodeHandle nh;
+    public: rclcpp::Node::SharedPtr rosNode;
 
-    public: ros::Subscriber controlSub;
+    public: rclcpp::Subscription<prius_msgs::msg::Control>::SharedPtr controlSub;
 
-    public: ros::Publisher speedPub;
+    public: rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr speedPub;
 
     /// \brief Pointer to the world
     public: physics::WorldPtr world;
@@ -230,8 +232,8 @@ PriusHybridPlugin::PriusHybridPlugin()
 {
   int argc = 0;
   char *argv = nullptr;
-  ros::init(argc, &argv, "PriusHybridPlugin");
-  this->robot_namespace_ = "";
+  rclcpp::init(argc, &argv);
+  this->robot_namespace_ = ""; // TODO: actually consider robot_namespace_
   this->dataPtr->flWheelRadius = 0.3;
   this->dataPtr->frWheelRadius = 0.3;
   this->dataPtr->blWheelRadius = 0.3;
@@ -239,7 +241,7 @@ PriusHybridPlugin::PriusHybridPlugin()
 }
 
 
-void PriusHybridPlugin::OnPriusCommand(const prius_msgs::Control::ConstPtr &msg)
+void PriusHybridPlugin::OnPriusCommand(prius_msgs::msg::Control::UniquePtr msg)
 {
   common::Time curTime = this->dataPtr->world->SimTime();
   this->dataPtr->lastSteeringCmdTime = curTime;
@@ -306,9 +308,16 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   if (_sdf->HasElement("robotNamespace"))
     this->robot_namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
-  ros::NodeHandle nh(this->robot_namespace_);
-  this->dataPtr->controlSub = nh.subscribe("prius/control", 10, &PriusHybridPlugin::OnPriusCommand, this);
-  this->dataPtr->speedPub = nh.advertise<std_msgs::Float32>("prius/speed", 1);
+  // TODO: consider this->robot_namespace_
+  this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("PriusHybridPlugin");
+  this->dataPtr->controlSub =
+    this->dataPtr->rosNode->create_subscription<prius_msgs::msg::Control>("prius/control", 10,
+      [this](prius_msgs::msg::Control::UniquePtr msg){
+        this->OnPriusCommand(std::move(msg));
+      }
+    );
+  this->dataPtr->speedPub =
+    this->dataPtr->rosNode->create_publisher<std_msgs::msg::Float32>("prius/speed", 1);
 
   this->dataPtr->node.Subscribe("/prius/reset",
       &PriusHybridPlugin::OnReset, this);
@@ -890,9 +899,9 @@ void PriusHybridPlugin::Update()
     this->dataPtr->odom += (fabs(linearVel) * dt);
 
     // Publish current speed via ROS.
-    std_msgs::Float32 msg;
+    std_msgs::msg::Float32 msg;
     msg.data = linearVel;
-    this->dataPtr->speedPub.publish(msg);
+    this->dataPtr->speedPub->publish(msg);
 
     this->dataPtr->lastMsgTime = curTime;
   }
