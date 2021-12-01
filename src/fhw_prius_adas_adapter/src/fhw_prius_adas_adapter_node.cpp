@@ -4,44 +4,59 @@
 #include <std_msgs/msg/float32.hpp>
 #include <limits>
 
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "fhw_prius_adas_adapter_node");
-  ros::NodeHandle n;
+int main(int argc, char **argv) {
+  rclcpp::init(argc, argv);
+  std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>("fhw_prius_adas_adapter_node");
   
   // re-publish simulated Prius lidar to behave like real-world ADAS lidar
-  ros::Publisher lidar_publisher = n.advertise<sensor_msgs::LaserScan>("/lidar/scan", 1);
-  ros::Subscriber laser_subscriber = n.subscribe<sensor_msgs::LaserScan>("/prius/center_laser/scan", 1, static_cast<boost::function<void (const sensor_msgs::LaserScan&)>>([&lidar_publisher](const sensor_msgs::LaserScan& msg) {
-    sensor_msgs::LaserScan outmsg = msg;
-    for (size_t i = 71; i < 274; i++) { // real-world lidar does never show the insides of the car
-      outmsg.ranges[i] = std::numeric_limits<float>::infinity();
-    };
-    for (float &distance : outmsg.ranges) {
-      distance /= 10.0f; // scale
-    };
-    lidar_publisher.publish(outmsg);
-  }));
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr lidar_publisher =
+    node->create_publisher<sensor_msgs::msg::LaserScan>("/lidar/scan", 1);
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_subscription =
+    node->create_subscription<sensor_msgs::msg::LaserScan>("/prius/center_laser/scan", 1,
+    [&lidar_publisher](sensor_msgs::msg::LaserScan::UniquePtr msg){
+      sensor_msgs::msg::LaserScan outmsg = *msg;
+      for (size_t i = 71; i < 274; i++) { // real-world lidar does never show the insides of the car
+        outmsg.ranges[i] = std::numeric_limits<float>::infinity();
+      };
+      for (float &distance : outmsg.ranges) {
+        distance /= 10.0f; // scale
+      };
+      lidar_publisher->publish(outmsg);
+    }
+  );
 
   // re-publish simulated Prius speed
-  ros::Publisher speed_publisher = n.advertise<std_msgs::Float32>("/adas2019/odometry/speed", 1);
-  ros::Subscriber speed_subscriber = n.subscribe<std_msgs::Float32>("/prius/speed", 1, static_cast<boost::function<void (const std_msgs::Float32&)>>([&speed_publisher](const std_msgs::Float32& msg){
-    std_msgs::Float32 out;
-    out.data = msg.data / 10.0f;
-    speed_publisher.publish(out);
-  }));
+  rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr speed_publisher =
+    node->create_publisher<std_msgs::msg::Float32>("/adas2019/odometry/speed", 1);
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr speed_subscription =
+    node->create_subscription<std_msgs::msg::Float32>("/prius/speed", 1,
+    [&speed_publisher](std_msgs::msg::Float32::UniquePtr msg) {
+      std_msgs::msg::Float32 out;
+      out.data = msg->data / 10.0f; // scale
+      speed_publisher->publish(out);
+    }
+  );
 
   // forward real-world ADAS control messages to simulated Prius
-  ros::Publisher control_publisher = n.advertise<prius_msgs::Control>("/prius/control", 1);
-  prius_msgs::Control control_msg;
-  ros::Subscriber steering_subscriber = n.subscribe<std_msgs::Float32>("/adas2019/actuator/steering", 1, static_cast<boost::function<void (const std_msgs::Float32&)>>([&control_publisher, &control_msg](const std_msgs::Float32& msg){
-    control_msg.steer = msg.data / -100.0f; // scale
-    control_publisher.publish(control_msg);
-  }));
-  ros::Subscriber throttle_subscriber = n.subscribe<std_msgs::Float32>("/adas2019/actuator/speed", 1, static_cast<boost::function<void (const std_msgs::Float32&)>>([&control_publisher, &control_msg](const std_msgs::Float32& msg){
-    control_msg.throttle = msg.data / 100.0f; // scale
-    control_publisher.publish(control_msg);
-  }));
-  
-  ros::spin();
+  prius_msgs::msg::Control control_msg;
+  rclcpp::Publisher<prius_msgs::msg::Control>::SharedPtr control_publisher =
+    node->create_publisher<prius_msgs::msg::Control>("/prius/control", 1);
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr steering_subscription =
+    node->create_subscription<std_msgs::msg::Float32>("/adas2019/actuator/steering", 1,
+    [&control_publisher, &control_msg](std_msgs::msg::Float32::UniquePtr msg) {
+      control_msg.steer = msg->data / -100.0f; // scale
+      control_publisher->publish(control_msg);
+    }
+  );
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr throttle_subscription =
+    node->create_subscription<std_msgs::msg::Float32>("/adas2019/actuator/speed", 1,
+    [&control_publisher, &control_msg](std_msgs::msg::Float32::UniquePtr msg) {
+      control_msg.throttle = msg->data / 100.0f; // scale
+      control_publisher->publish(control_msg);
+    }
+  );
+
+  rclcpp::spin(node);
+  rclcpp::shutdown();
   return 0;
 }

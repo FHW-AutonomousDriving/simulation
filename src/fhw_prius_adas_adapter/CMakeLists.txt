@@ -18,3 +18,4 @@ install(TARGETS
   node
   DESTINATION lib/${PROJECT_NAME}
 )
+ament_package()
