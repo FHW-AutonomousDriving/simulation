@@ -1,8 +1,5 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(prius_description)
-
-find_package(catkin REQUIRED)
-
-catkin_package()
-
-install(DIRECTORY meshes DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+find_package(ament_cmake REQUIRED)
+install(DIRECTORY meshes urdf DESTINATION share/${PROJECT_NAME})
+ament_package()

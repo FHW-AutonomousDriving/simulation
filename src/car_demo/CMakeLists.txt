@@ -19,7 +19,7 @@ target_link_libraries(PriusHybridPlugin ${GAZEBO_LIBRARIES} ${IGNITION-MSGS_LIBR
   #~ PriusHybridPlugin
   #~ DESTINATION lib/${PROJECT_NAME}
 #~ )
-install(DIRECTORY worlds models DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY worlds models launch DESTINATION share/${PROJECT_NAME})
 ament_package()
 
 #~ set (PRIUSCUP_MAJOR_VERSION 0)
