@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find-pkg-share gazebo_ros)/launch/gazebo.launch.py">
+    <arg name="verbose" value="true"/>
+    <arg name="world_name" value="$(find-pkg-share car_demo)/worlds/fhw.world"/>
+  </include>
+  <!--
+  <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher" />
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="very_inaccurate_odom" args="0 0 0 0 0 0 odom base_link"/>
+  -->
+  <node name="spawn_urdf" pkg="gazebo_ros" exec="spawn_entity.py" args=" -entity prius-file $(find-pkg-share prius_description)/urdf/prius.urdf -urdf -x 3 -y -7 -z 0.5 -Y -1.570796" />
+  <node name="fhw_prius_adas_adapter" pkg="fhw_prius_adas_adapter" exec="node" output="screen"/>
+</launch>
