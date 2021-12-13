@@ -16,6 +16,8 @@
 */
 
 // TODO: IMPORTANT: find out why pthread_stack_min.h is not included implicitly for defining PTHREAD_STACK_MIN
+// TODO: this entire thing should probably replaced by the standard https://github.com/ros-simulation/gazebo_ros_pkgs/blob/foxy/gazebo_plugins/src/gazebo_ros_ackermann_drive.cpp
+// and URDF adapted accordingly, see gazebo_ros_ackermann_drive.hpp or https://automaticaddison.com/how-to-make-a-mobile-robot-in-gazebo-ros2-foxy/
 #include <bits/pthread_stack_min.h>
 #include <algorithm>
 #include <fstream>
@@ -32,17 +34,19 @@
 #include "PriusHybridPlugin.hh"
 
 #include <rclcpp/rclcpp.hpp>
+#include <gazebo_ros/node.hpp>
 #include <std_msgs/msg/float32.hpp>
 
 namespace gazebo
 {
   class PriusHybridPluginPrivate
   {
-    public: rclcpp::Node::SharedPtr rosNode;
+    /// A pointer to the GazeboROS node.
+    public: gazebo_ros::Node::SharedPtr ros_node_;
 
-    public: rclcpp::Subscription<prius_msgs::msg::Control>::SharedPtr controlSub;
+    public: rclcpp::Subscription<prius_msgs::msg::Control>::SharedPtr control_sub_;
 
-    public: rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr speedPub;
+    public: rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr speed_pub_;
 
     /// \brief Pointer to the world
     public: physics::WorldPtr world;
@@ -230,9 +234,6 @@ using namespace gazebo;
 PriusHybridPlugin::PriusHybridPlugin()
     : dataPtr(new PriusHybridPluginPrivate)
 {
-  int argc = 0;
-  char *argv = nullptr;
-  rclcpp::init(argc, &argv);
   this->robot_namespace_ = ""; // TODO: actually consider robot_namespace_
   this->dataPtr->flWheelRadius = 0.3;
   this->dataPtr->frWheelRadius = 0.3;
@@ -243,6 +244,7 @@ PriusHybridPlugin::PriusHybridPlugin()
 
 void PriusHybridPlugin::OnPriusCommand(prius_msgs::msg::Control::UniquePtr msg)
 {
+  gzmsg << "OnPriusCommand…" << std::endl;
   common::Time curTime = this->dataPtr->world->SimTime();
   this->dataPtr->lastSteeringCmdTime = curTime;
   this->dataPtr->lastPedalCmdTime = curTime;
@@ -294,7 +296,7 @@ PriusHybridPlugin::~PriusHybridPlugin()
 /////////////////////////////////////////////////
 void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
-  gzwarn << "PriusHybridPlugin loading params" << std::endl;
+  gzmsg << "PriusHybridPlugin loading…" << std::endl;
   // shortcut to this->dataPtr
   PriusHybridPluginPrivate *dPtr = this->dataPtr.get();
 
@@ -309,15 +311,15 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("robotNamespace"))
     this->robot_namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>() + "/";
   // TODO: consider this->robot_namespace_
-  this->dataPtr->rosNode = std::make_shared<rclcpp::Node>("PriusHybridPlugin");
-  this->dataPtr->controlSub =
-    this->dataPtr->rosNode->create_subscription<prius_msgs::msg::Control>("prius/control", 10,
-      [this](prius_msgs::msg::Control::UniquePtr msg){
+  this->dataPtr->ros_node_ = gazebo_ros::Node::Get(_sdf);
+  this->dataPtr->control_sub_ =
+    this->dataPtr->ros_node_->create_subscription<prius_msgs::msg::Control>("prius/control", 1,
+      [this](prius_msgs::msg::Control::UniquePtr msg) {
         this->OnPriusCommand(std::move(msg));
       }
     );
-  this->dataPtr->speedPub =
-    this->dataPtr->rosNode->create_publisher<std_msgs::msg::Float32>("prius/speed", 1);
+  this->dataPtr->speed_pub_ =
+    this->dataPtr->ros_node_->create_publisher<std_msgs::msg::Float32>("prius/speed", 1);
 
   this->dataPtr->node.Subscribe("/prius/reset",
       &PriusHybridPlugin::OnReset, this);
@@ -563,6 +565,8 @@ void PriusHybridPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   this->dataPtr->node.Subscribe("/keypress", &PriusHybridPlugin::OnKeyPressIgn,
       this);
+
+  gzmsg << "PriusHybridPlugin Load finished." << std::endl;
 }
 
 /////////////////////////////////////////////////
@@ -901,7 +905,7 @@ void PriusHybridPlugin::Update()
     // Publish current speed via ROS.
     std_msgs::msg::Float32 msg;
     msg.data = linearVel;
-    this->dataPtr->speedPub->publish(msg);
+    this->dataPtr->speed_pub_->publish(msg);
 
     this->dataPtr->lastMsgTime = curTime;
   }
