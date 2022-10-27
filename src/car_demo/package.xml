@@ -2,9 +2,12 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>car_demo</name>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
   <description>
   Totota Prius Hybrid car demo, adapted for the ADAS "Audi" Model car at the Fachhochschule Wedel.
+
+  Needs ros-humble-gazebo-plugins.
+  Source /usr/share/gazebo/setup.sh before executing launchfile.
   </description>
   <maintainer email="hermann.hoehne@fh-wedel.de">Hermann Höhne</maintainer>
   <license>APACHE 2.0</license>

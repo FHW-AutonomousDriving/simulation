@@ -7,15 +7,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(prius_msgs REQUIRED)
-find_package(gazebo 11 REQUIRED) # libgazebo11-dev ros-foxy-gazebo-plugins
+find_package(gazebo_ros REQUIRED)
+find_package(gazebo 11 REQUIRED) # libgazebo-dev ros-humble-gazebo-ros
 find_package(ignition-msgs5 REQUIRED)
 
-include_directories(${GAZEBO_INCLUDE_DIRS} ${SDFormat_INCLUDE_DIRS})
 add_library(PriusHybridPlugin SHARED plugins/PriusHybridPlugin.cc)
-ament_target_dependencies(PriusHybridPlugin rclcpp prius_msgs)
-target_link_libraries(PriusHybridPlugin ${GAZEBO_LIBRARIES} ${IGNITION-MSGS_LIBRARIES})
+ament_target_dependencies(PriusHybridPlugin rclcpp prius_msgs gazebo_ros)
 
-install(TARGETS 
+install(TARGETS
   PriusHybridPlugin
   DESTINATION lib
 )
